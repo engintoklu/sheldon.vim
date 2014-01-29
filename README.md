@@ -38,7 +38,9 @@ command argument1 argument2 ... argumentN
 For giving an argument which includes space, there are three types of quotations:
 
 > command "one argument"
+
 > command 'one argument'
+
 > command {one argument}
 
 As an alternative to quotation, you can use the backslash escape character:
