@@ -47,7 +47,7 @@ For giving an argument which includes space, there are three types of quotations
 
 As an alternative to quotation, you can use the backslash escape character:
 
-    command one\\ argument
+    command one\ argument
 
 The environment variable expansion is as follows:
 
@@ -63,7 +63,7 @@ The output of another command can be captured:
 
 You can also use wildcard expansion:
 
-    echo Here are the text files: \*.txt
+    echo Here are the text files: *.txt
 
 ## Built-in commands
 
@@ -139,7 +139,7 @@ You can also use wildcard expansion:
 
 ### for
 
-    for f in \*.txt {echo here is a text file: %f%}
+    for f in *.txt {echo here is a text file: %f%}
 
 ## Author
 Created by Nihat Engin Toklu ( https://github.com/engintoklu )
