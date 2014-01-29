@@ -142,8 +142,11 @@ for:
 
 Author
 ------
-Created by Nihat Engin Toklu ( www.github.com/engintoklu )
-Do not hesitate to contact me for suggestions of improvement, and/or for letting me know about bugs.
+Created by Nihat Engin Toklu ( github.com/engintoklu )
+
+Syntax Highlighting added by Rupesh Kumar Srivastava ( github.com/flukeskywalker )
+
+Please feel free to open an issue or send a PR.
 
 License
 -------
