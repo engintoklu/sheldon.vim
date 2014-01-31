@@ -49,9 +49,17 @@ As an alternative to quotation, you can use the backslash escape character:
 
     command one\ argument
 
-The environment variable expansion is as follows:
+The variable expansion is as follows:
 
     echo %PATH%
+
+Note that the quotation by using the double quote character (") is a weak quotation. This means that the backslash escape character and the variable expansion work also within this weak quotation. For example, assuming that `MYVAR` is a variable which stores the string `HELLO`, the following command writes `I SAY \HELLO\` to the screen:
+
+    echo "I SAY \\%MYVAR%\\"
+
+The following code, however, will write `I SAY \\%MYVAR%\\` to the screen:
+
+    echo 'I SAY \\%MYVAR%\\'
 
 Comments are given by # character:
 
@@ -108,6 +116,20 @@ You can also use wildcard expansion:
 `while <condition> <action>` -- evaluate the Sheldon command string action, as long as condition returns success
 
 `which <cmdname>` -- write which executable or Vim function is associated with the Sheldon command cmdname
+
+## Notes for Windows Users
+
+Currently, Sheldon.vim is not very well tested in Windows systems. For now, the following comments are applicable.
+
+In Windows, the path separator is the backslash character (`\`), not the forward slash (`/`) as in Linux, BSD, Mac OSX, etc. However, the backslash character is used as the escape character in Sheldon.vim. Therefore, a Windows user is suggested to write the paths within single quotes (`'`):
+
+    cd 'C:\Program Files'
+    
+Another approach is to use the rules of the backslash escape character:
+
+    cd C:\\Program\ Files
+
+In Windows, there are no external executables like cp, ls, rm to do basic file operations (such commands are built into cmd.exe). You might want to check GNUWin32 project, find cp.exe, ls.exe, mv.exe, rm.exe, etc. from there, and then put those executables into path.
 
 ## Examples for some advanced commands
 
