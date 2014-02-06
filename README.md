@@ -18,8 +18,11 @@ To create a Sheldon buffer and show it in a new window:
 When you are in a Sheldon buffer, switch to INSERT mode, and write your command.
 When you hit ENTER, your command will be executed.
 You don't have to be at the last line to execute a command.
-You can go to previous lines, and hit ENTER in INSERT mode to execute that line.
-This feature makes the entire Sheldon buffer your command history.
+You can go to previous lines, edit them, and hit ENTER in INSERT mode to execute that line.
+This feature makes the entire Sheldon buffer your editable command history.
+
+To quit Sheldon, you can simply destroy the buffer by switching to NORMAL mode 
+or in INSERT mode, hit Ctrl+d.
 
 Sheldon can understand the outputs of gcc and python.
 For example, when you execute the following line in Sheldon:
@@ -79,7 +82,7 @@ You can also use wildcard expansion:
 
 `pwd` -- write the current directory
 
-`cd <argdir>` -- change the current directory to argdir
+`cd <argdir>` -- change the current directory to argdir (default: $HOME)
 
 `vi <argfile>` -- open a Vim buffer for argfile and switch to it
 
