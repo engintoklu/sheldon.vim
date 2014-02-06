@@ -172,7 +172,12 @@ endfunction
 
 function! g:SheldonCommandCd(tokens)
     " Changes the current directory of Vim
-    execute 'cd ' . fnameescape(a:tokens[1])
+    if len(a:tokens) == 1
+        " Switch to home directory if no dir provided
+        execute 'cd ' . '$HOME'
+    else
+        execute 'cd ' . fnameescape(a:tokens[1])
+    endif
     return [0, [], 0]
 endfunction
 
