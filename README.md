@@ -21,7 +21,7 @@ You don't have to be at the last line to execute a command.
 You can go to previous lines, edit them, and hit ENTER in INSERT mode to execute that line.
 This feature makes the entire Sheldon buffer your editable command history.
 
-To quit Sheldon, you can simply destroy the buffer by switching to NORMAL mode 
+To quit Sheldon, you can simply destroy the buffer by switching to NORMAL mode
 or in INSERT mode, hit Ctrl+d.
 
 Sheldon can understand the outputs of gcc and python.
@@ -29,12 +29,14 @@ For example, when you execute the following line in Sheldon:
 
     gcc -o myprogram myprogram.c
 
-Let us assume now that you receive an error message from gcc like this:
+Let us now assume that you receive an error message from gcc like this:
 
     myprogram.c:12:4: some error message here
 
-You can go over that line, switch to NORMAL mode, and press ENTER.
+You can go over that error message line, switch to NORMAL mode, and press ENTER.
 When you do that, Sheldon will open a buffer for myprogram.c, and bring you to the erroneous line.
+Also, if you have multiple windows open, and you want to see that erroneous line of myprogram.c in the previous window,
+you can go over the error message line, and press TAB in NORMAL mode.
 
 ## Syntax
 

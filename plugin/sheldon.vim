@@ -826,7 +826,7 @@ function! g:SheldonEditFilePrevWin(eargs)
     execute 'e! ' . a:eargs
 endfunction
 
-function! g:SheldonGotoSpecifiedLine()
+function! g:SheldonGotoSpecifiedLine(inPrevWin)
     " Jumps to the file and line number written in the current line
     " The regular expressions for parsing the line are defined in g:SheldonPatterns
 
@@ -835,7 +835,11 @@ function! g:SheldonGotoSpecifiedLine()
         let ss = substitute(s, pat, sub, '')
         if ss != s
             let parts = split(ss, "\<NL>")
-            call g:SheldonEditFile('+' . parts[1] . ' ' . fnameescape(fnamemodify(parts[0], ':p')))
+            if a:inPrevWin
+                call g:SheldonEditFilePrevWin('+' . parts[1] . ' ' . fnameescape(fnamemodify(parts[0], ':p')))
+            else
+                call g:SheldonEditFile('+' . parts[1] . ' ' . fnameescape(fnamemodify(parts[0], ':p')))
+            endif
             " execute 'enew +' . parts[1] . ' ' . parts[0]
             break
         endif
@@ -953,7 +957,8 @@ function! g:SheldonPrepareBuffer()
     setlocal noswapfile
     setlocal filetype=sheldonbuf
 
-    nnoremap <buffer> <CR> :call g:SheldonGotoSpecifiedLine()<CR>
+    nnoremap <buffer> <Tab> :call g:SheldonGotoSpecifiedLine(1)<CR>
+    nnoremap <buffer> <CR> :call g:SheldonGotoSpecifiedLine(0)<CR>
     inoremap <buffer> <CR> <C-o>:call g:SheldonExecuteThisLine()<CR>
     " inoremap <buffer> <space> <space><C-o>:call g:SheldonHandleSpecialCmd()<CR>
     inoremap <buffer> <Tab> <C-o>:call g:SheldonTriggerCompletion()<CR>
