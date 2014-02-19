@@ -1,7 +1,9 @@
 " This is sheldon.vim
 " Author: Nihat Engin Toklu < www.github.com/engintoklu >
 
-
+if !exists('g:SheldonBufferName')
+    let g:SheldonBufferName = 'SheldonBuffer'
+endif
 
 if !exists('g:SheldonPatterns')
     let g:SheldonPatterns = []
@@ -183,13 +185,13 @@ endfunction
 
 function! g:SheldonCommandVi(tokens)
     " Opens the specified file for editing
-    call g:SheldonEditFile(fnameescape(fnamemodify(a:tokens[1], ':p')))
+    call g:SheldonEditFile(fnameescape(fnamemodify(a:tokens[1], ':p')), 1)
     return [0, [], 1]
 endfunction
 
 function! g:SheldonCommandWin(tokens)
     " Opens the specified file for editing in prev window
-    call g:SheldonEditFilePrevWin(fnameescape(fnamemodify(a:tokens[1], ':p')))
+    call g:SheldonEditFilePrevWin(fnameescape(fnamemodify(a:tokens[1], ':p')), 1)
     return [0, [], 1]
 endfunction
 
@@ -813,17 +815,21 @@ function! g:SheldonPrompt()
     return '# Current directory: ' . getcwd()
 endfunction
 
-function! g:SheldonEditFile(eargs)
+function! g:SheldonEditFile(eargs, makeNewLine)
     " Executes the ex-command e!, with the specified argument string
-    execute 'normal! Go'
+    if a:makeNewLine
+        execute 'normal! Go'
+    endif
     execute 'e! ' . a:eargs
 endfunction
 
-function! g:SheldonEditFilePrevWin(eargs)
+function! g:SheldonEditFilePrevWin(eargs, makeNewLine)
     " Switches window & executes the ex-command e!, with the specified argument string
-    execute 'normal! Go'
+    if a:makeNewLine
+        execute 'normal! Go'
+    endif
     wincmd W
-    execute 'e! ' . a:eargs
+    execute 'e ' . a:eargs
 endfunction
 
 function! g:SheldonGotoSpecifiedLine(inPrevWin)
@@ -836,9 +842,9 @@ function! g:SheldonGotoSpecifiedLine(inPrevWin)
         if ss != s
             let parts = split(ss, "\<NL>")
             if a:inPrevWin
-                call g:SheldonEditFilePrevWin('+' . parts[1] . ' ' . fnameescape(fnamemodify(parts[0], ':p')))
+                call g:SheldonEditFilePrevWin('+' . parts[1] . ' ' . fnameescape(fnamemodify(parts[0], ':p')), 0)
             else
-                call g:SheldonEditFile('+' . parts[1] . ' ' . fnameescape(fnamemodify(parts[0], ':p')))
+                call g:SheldonEditFile('+' . parts[1] . ' ' . fnameescape(fnamemodify(parts[0], ':p')), 0)
             endif
             " execute 'enew +' . parts[1] . ' ' . parts[0]
             break
@@ -975,13 +981,19 @@ endfunction
 function! g:SheldonCreateNew()
     " Creates a Sheldon buffer
 
-    execute 'e SheldonBuffer'
-    if !exists('b:SheldonVars')
-        call g:SheldonPrepareBuffer()
-    endif
+    let successful = 0
+    try
+        execute 'e ' . g:SheldonBufferName
+        let successful = 1
+    finally
+        if successful
+            if !exists('b:SheldonVars')
+                call g:SheldonPrepareBuffer()
+            endif
+        endif
+    endtry
 endfunction
 
 command! Sheldon :call g:SheldonCreateNew()
 command! SheldonSplit :call g:SheldonCreateSplit()
-
 
