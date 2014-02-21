@@ -20,6 +20,8 @@ When you hit ENTER, your command will be executed.
 You don't have to be at the last line to execute a command.
 You can go to previous lines, edit them, and hit ENTER in INSERT mode to execute that line.
 This feature makes the entire Sheldon buffer your editable command history.
+The classical command line history interface is also available:
+in INSERT mode, you can use Ctrl+Up and Ctrl+Down to browse your command history.
 
 To quit Sheldon, you can simply destroy the buffer by switching to NORMAL mode
 or in INSERT mode, hit Ctrl+d.

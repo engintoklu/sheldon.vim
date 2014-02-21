@@ -9,6 +9,10 @@ if !exists('g:SheldonPatterns')
     let g:SheldonPatterns = []
 endif
 
+if !exists('g:SheldonHistoryLength')
+    let g:SheldonHistoryLength = 100
+endif
+
 " to handle the outputs of gcc, g++, clang, etc.
 call add(g:SheldonPatterns, ['\m^\(.*\):\([0-9][0-9]*\):\([0-9][0-9]*\): ', '\1\n\2\n\3\n'])
 call add(g:SheldonPatterns, ['\m^\(.*\):\([0-9][0-9]*\): ', '\1\n\2\n1\n'])
@@ -869,8 +873,59 @@ function! s:Strip(input_string)
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
 endfunction
 
+function! g:SheldonHistoryIndexUp()
+    let b:SheldonHistoryIndex = (b:SheldonHistoryIndex + 1)
+    if b:SheldonHistoryIndex >= len(b:SheldonHistory)
+        let b:SheldonHistoryIndex = -1
+    endif
+endfunction
+
+function! g:SheldonHistoryIndexDown()
+    let b:SheldonHistoryIndex = (b:SheldonHistoryIndex - 1)
+    if b:SheldonHistoryIndex < -1
+        let b:SheldonHistoryIndex = len(b:SheldonHistory) - 1
+    endif
+endfunction
+
+function! g:SheldonWriteHistoryLine()
+    let s = ''
+    if b:SheldonHistoryIndex >= 0
+        let s = b:SheldonHistory[-(b:SheldonHistoryIndex + 1)]
+    endif
+    execute 'normal! 0"_d$i' . s
+endfunction
+
+function! g:SheldonHistoryUp()
+    call g:SheldonHistoryIndexUp()
+    call g:SheldonWriteHistoryLine()
+endfunction
+
+function! g:SheldonHistoryDown()
+    call g:SheldonHistoryIndexDown()
+    call g:SheldonWriteHistoryLine()
+endfunction
+
+function! g:SheldonUpdateHistory(currentline)
+    let updateHistory = 0
+    if len(b:SheldonHistory) == 0
+        let updateHistory = 1
+    else
+        if a:currentline != b:SheldonHistory[-1]
+            let updateHistory = 1
+        endif
+    endif
+    if updateHistory
+        call add(b:SheldonHistory, a:currentline)
+        if len(b:SheldonHistory) > g:SheldonHistoryLength
+            let b:SheldonHistory = b:SheldonHistory[1:]
+        endif
+    endif
+    let b:SheldonHistoryIndex = -1
+endfunction
+
 function! g:SheldonExecuteThisLine()
     " Executes the command in the current line
+    call g:SheldonUpdateHistory(getline('.'))
     let [result, outputAsList, exiting] = g:SheldonExecuteLine(getline('.'))
     if !exiting
         let outputAsList = outputAsList + [g:SheldonPrompt()]
@@ -957,6 +1012,8 @@ function! g:SheldonPrepareBuffer()
     " Adds the current buffer the keybindings of Sheldon.vim
 
     let b:SheldonVars = {}
+    let b:SheldonHistory = []
+    let b:SheldonHistoryIndex = -1
 
     setlocal buftype=nofile
     setlocal bufhidden=hide
@@ -965,6 +1022,8 @@ function! g:SheldonPrepareBuffer()
 
     nnoremap <buffer> <Tab> :call g:SheldonGotoSpecifiedLine(1)<CR>
     nnoremap <buffer> <CR> :call g:SheldonGotoSpecifiedLine(0)<CR>
+    inoremap <buffer> <C-Up> <C-o>:call g:SheldonHistoryUp()<CR><Right>
+    inoremap <buffer> <C-Down> <C-o>:call g:SheldonHistoryDown()<CR><Right>
     inoremap <buffer> <CR> <C-o>:call g:SheldonExecuteThisLine()<CR>
     " inoremap <buffer> <space> <space><C-o>:call g:SheldonHandleSpecialCmd()<CR>
     inoremap <buffer> <Tab> <C-o>:call g:SheldonTriggerCompletion()<CR>
