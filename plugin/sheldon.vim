@@ -1020,6 +1020,10 @@ function! g:SheldonPrepareBuffer()
     setlocal noswapfile
     setlocal filetype=sheldonbuf
 
+    " === from Rupesh Kumar Srivastava < www.github.com/flukeskywalker > ===
+    " <C-d> closes the Sheldon buffer
+    inoremap <buffer> <C-d> <C-o>:bd<CR>
+    " ======================================================================
     nnoremap <buffer> <Tab> :call g:SheldonGotoSpecifiedLine(1)<CR>
     nnoremap <buffer> <CR> :call g:SheldonGotoSpecifiedLine(0)<CR>
     inoremap <buffer> <C-Up> <C-o>:call g:SheldonHistoryUp()<CR><Right>
