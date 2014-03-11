@@ -14,6 +14,10 @@ To create a Sheldon buffer and show it in a new window:
 
     :SheldonSplit
 
+To create a Sheldon buffer and execute a command in it:
+
+    :SheldonRun ls
+
 ## How to use Sheldon.vim
 When you are in a Sheldon buffer, switch to INSERT mode, and write your command.
 When you hit ENTER, your command will be executed.

@@ -2,7 +2,7 @@
 " Author: Nihat Engin Toklu < www.github.com/engintoklu >
 
 if !exists('g:SheldonBufferName')
-    let g:SheldonBufferName = 'SheldonBuffer'
+    let g:SheldonBufferName = '~/SheldonBuffer'
 endif
 
 if !exists('g:SheldonPatterns')
@@ -1036,13 +1036,13 @@ function! g:SheldonPrepareBuffer()
 endfunction
 
 function! g:SheldonCreateSplit()
-    " Creates a Sheldon buffer in a new window
+    " Creates/opens a Sheldon buffer in a new window
     execute 'new'
     call g:SheldonCreateNew()
 endfunction
 
 function! g:SheldonCreateNew()
-    " Creates a Sheldon buffer
+    " Creates/opens a Sheldon buffer
 
     let successful = 0
     try
@@ -1057,6 +1057,23 @@ function! g:SheldonCreateNew()
     endtry
 endfunction
 
+function! g:SheldonRunCommand(sheldoncmd)
+    " Creates/opens a Sheldon buffer, and executes the argument
+    let successful = 0
+    try
+        execute 'Sheldon'
+        let successful = 1
+    finally
+        if successful
+            execute 'normal! Go'
+            call append(line("."), a:sheldoncmd)
+            execute 'normal! j'
+            call g:SheldonExecuteThisLine()
+        endif
+    endtry
+endfunction
+
 command! Sheldon :call g:SheldonCreateNew()
 command! SheldonSplit :call g:SheldonCreateSplit()
+command! -nargs=+ SheldonRun :call g:SheldonRunCommand("<args>")
 
