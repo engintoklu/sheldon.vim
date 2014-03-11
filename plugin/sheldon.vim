@@ -424,7 +424,7 @@ function! g:SheldonEscape(token)
     for i in range(len(a:token))
         let c = a:token[i]
         if c == "'"
-            let result = result . "''"
+            let result = result . "'" . '"' . "'" . '"' . "'"
         else
             let result = result . c
         endif
