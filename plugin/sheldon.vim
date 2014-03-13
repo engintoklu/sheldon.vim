@@ -469,6 +469,7 @@ function! g:SheldonExpandVars(token)
             if c == "%"
                 let result = result . s:SheldonEscapeFromGlob(g:SheldonGetVarValue(varname))
                 let winstyle = 0
+                let varname = ""
             else
                 let varname = varname . c
             endif
@@ -632,6 +633,8 @@ function! g:SheldonSplit(cmdline)
                 endif
             elseif c == '%' && singlequote
                 let cell = cell . '\%'
+            elseif c == '~'
+                let cell = cell . '\~'
             elseif index(g:SheldonGlobSpecialChars, c) != -1
                 let cell = cell . '\' . c
             elseif doublequote && c == '"'
