@@ -130,17 +130,21 @@ You can also use wildcard expansion:
 
 ## Notes for Windows Users
 
-Currently, Sheldon.vim is not very well tested in Windows systems. For now, the following comments are applicable.
+On Windows, the primary directory separator is the backslash character (`\`). The forward slash (`/`) is the secondary directory separator. If you need to call an external tool which understands paths only via backslashes, you might want to quote the path within single quotes (`'`):
 
-In Windows, the path separator is the backslash character (`\`), not the forward slash (`/`) as in Linux, BSD, Mac OSX, etc. However, the backslash character is used as the escape character in Sheldon.vim. Therefore, a Windows user is suggested to write the paths within single quotes (`'`):
-
-    cd 'C:\Program Files'
+    myexternaltool 'C:\MyPath\MyFile.txt'
+    myexternaltool 'C:\My Path With Spaces In It'
     
 Another approach is to use the rules of the backslash escape character:
 
-    cd C:\\Program\ Files
+    cd C:\\My\ Path\ With\ Spaces\ In\ It
 
-In Windows, there are no external executables like cp, ls, rm to do basic file operations (such commands are built into cmd.exe). You might want to check GNUWin32 project, find cp.exe, ls.exe, mv.exe, rm.exe, etc. from there, and then put those executables into path.
+On Windows, there are no external executables called ls, cp, mv, rm, mkdir, rmdir to do basic file operations (such commands are built into cmd.exe). Therefore, on Windows, Sheldon.vim provides wrappers for these commands. These wrappers have POSIXish behavior, with very basic functionality. They perform their tasks by calling Powershell's related cmdlets. They understand paths expressed via forward slashes.
+If you don't want Sheldon.vim to use its own wrappers for cp, mv, etc., (because maybe you already have Windows ports of these commands on PATH), then make sure that the following assignment is set before sheldon.vim is loaded:
+
+    let g:SheldonUsePowershellOnWin = 0
+
+You might want to check the setting variable `g:SheldonPowershellSettings` if you would like to modify the flags which are passed to powershell.exe.
 
 ## Examples for some advanced commands
 

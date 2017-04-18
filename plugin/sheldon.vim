@@ -13,6 +13,14 @@ if !exists('g:SheldonHistoryLength')
     let g:SheldonHistoryLength = 100
 endif
 
+if !exists('g:SheldonPowershellSettings')
+    let g:SheldonPowershellSettings = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Unrestricted']
+endif
+
+if !exists('g:SheldonUsePowershellOnWin')
+    let g:SheldonUsePowershellOnWin = 1
+endif
+
 " to handle the outputs of gcc, g++, clang, etc.
 call add(g:SheldonPatterns, ['\m^\(.*\):\([0-9][0-9]*\):\([0-9][0-9]*\): ', '\1\n\2\n\3\n'])
 call add(g:SheldonPatterns, ['\m^\(.*\):\([0-9][0-9]*\): ', '\1\n\2\n1\n'])
@@ -55,6 +63,14 @@ let g:SheldonCommands["for"] = "g:SheldonCommandFor"
 let g:SheldonCommands["else"] = "g:SheldonCommandElse"
 let g:SheldonCommands["while"] = "g:SheldonCommandWhile"
 let g:SheldonCommands["which"] = "g:SheldonCommandWhich"
+if (has("win32") || has("win64")) && g:SheldonUsePowershellOnWin == 1
+    let g:SheldonCommands["ls"] = "g:SheldonPowershellCommand"
+    let g:SheldonCommands["cp"] = "g:SheldonPowershellCommand"
+    let g:SheldonCommands["mv"] = "g:SheldonPowershellCommand"
+    let g:SheldonCommands["rm"] = "g:SheldonPowershellCommand"
+    let g:SheldonCommands["mkdir"] = "g:SheldonPowershellCommand"
+    let g:SheldonCommands["rmdir"] = "g:SheldonPowershellCommand"
+endif
 
 function! s:dirname(s)
     return fnamemodify(a:s, ":h")
@@ -62,6 +78,146 @@ endfunction
 
 function! s:filename(s)
     return fnamemodify(a:s, ":t")
+endfunction
+
+function! s:separateFlagsAndArgs(cmdline)
+    let flags = ''
+    let args = []
+    let expectingFlags = 1
+    let askingForHelp = 0
+    for cmdcell in a:cmdline
+        if expectingFlags == 1 && cmdcell == '--help'
+            let askingForHelp = 1
+        elseif expectingFlags == 1 && len(cmdcell) == '--'
+            let expectingFlags = 0
+        elseif expectingFlags == 1 && len(cmdcell) > 0 && cmdcell[0] == '-'
+            for i in range(1, len(cmdcell))
+                let flags = flags . cmdcell[i]
+            endfor
+        else
+            call add(args, cmdcell)
+        endif
+    endfor
+    return [flags, args, askingForHelp]
+endfunction
+
+function! s:isPowershellFlag(s)
+    if a:s == '--'
+        return 1
+    else
+        let ss = tolower(a:s)
+        if matchstr(ss, '-[a-z]\+') == ss
+            return 1
+        else
+            return 0
+        endif
+    endif
+endfunction
+
+function! s:powershellQuote(s)
+    if s:isPowershellFlag(a:s) == 1
+        return a:s
+    else
+        let result = ''
+        for i in range(len(a:s))
+            let c = a:s[i]
+            if c == "'"
+                let result = result . "''"
+            else
+                let result = result . c
+            endif
+        endfor
+        return "'" . result . "'"
+    endif
+endfunction
+
+function! s:runPowershellCommand(cmd, argtokens)
+    let pshellcmd = a:cmd
+    let first = 1
+    for token in a:argtokens
+        let pshellcmd = pshellcmd . ' ' . s:powershellQuote(token)
+    endfor
+    
+    let output = system(g:SheldonMakeSystemString(['powershell'] + g:SheldonPowershellSettings + ['-Command', pshellcmd]))
+    let result = v:shell_error
+    let outputAsList = split(output, "\<NL>")
+
+    return [result, outputAsList, 0]
+endfunction
+
+function! g:SheldonPowershellCommand(cmdline)
+    let q = s:separateFlagsAndArgs(a:cmdline[1:])
+    let flags = q[0]
+    let fnames = q[1]
+    let askingForHelp = q[2]
+    let fdestination = ''
+
+    if askingForHelp == 1
+        if a:cmdline[0] == 'ls'
+            return [0, ['ls : a wrapper in Sheldon.vim for Powershell cmdlet ls. Lists files.', 'Usage: ', 'ls [FLAGS] FILENAME(S)', 'Flags: -v Verbose  -r Recurse  -f Force'], 0]
+        elseif a:cmdline[0] == 'cp'
+            return [0, ['cp : a wrapper in Sheldon.vim for Powershell cmdlet cp. Copies files.', 'Usage: ', 'cp [FLAGS] SOURCEFILE(S) DESTINATION', 'Flags: -v Verbose  -r Recurse  -f Force'], 0]
+        elseif a:cmdline[0] == 'mv'
+            return [0, ['mv : a wrapper in Sheldon.vim for Powershell cmdlet mv. Moves files.', 'Usage: ', 'mv [FLAGS] SOURCEFILE(S) DESTINATION', 'Flags: -v Verbose  -r Recurse  -f Force'], 0]
+        elseif a:cmdline[0] == 'rm'
+            return [0, ['rm : a wrapper in Sheldon.vim for Powershell cmdlet rm. Removes files.', 'Usage: ', 'rm [FLAGS] FILENAME(S)', 'Flags: -v Verbose  -r Recurse  -f Force'], 0]
+        elseif a:cmdline[0] == 'mkdir'
+            return [0, ['mkdir : a wrapper in Sheldon.vim for Powershell cmdlet mkdir. Creates directories.', 'Usage: ', 'mkdir [FLAGS] DIRNAME(S)', 'Flags: -v Verbose  -f Force'], 0]
+        elseif a:cmdline[0] == 'rmdir'
+            return [0, ['rmdir : a wrapper in Sheldon.vim for Powershell cmdlet rmdir. Removes directories.', 'Usage: ', 'rmdir [FLAGS] DIRNAME(S)', 'Flags: -v Verbose  -r Recurse  -f Force'], 0]
+        endif
+    endif
+
+    if a:cmdline[0] == 'ls' && len(fnames) == 0
+        call add(fnames, '.')
+    endif
+
+    if a:cmdline[0] == 'cp' || a:cmdline[0] == 'mv'
+        if len(fnames) < 2
+            return [1, [a:cmdline[0] . ': wrong number of arguments'], 0]
+        else
+            let fdestination = fnames[-1]
+            let fnames = fnames[:-2]
+        endif
+    endif
+
+    let pshellArgs = []
+
+    for iflag in range(len(flags))
+        let flag = flags[iflag]
+        if flag == 'v'
+            call add(pshellArgs, '-verbose')
+        elseif flag == 'r' || flag == 'R'
+            if a:cmdline[0] == 'mkdir'
+                return [1, [a:cmdline[0] . ': unknown option: ' . flag], 0]
+            else
+                call add(pshellArgs, '-recurse')
+            endif
+        elseif flag == 'f'
+            call add(pshellArgs, '-force')
+        else
+            return [1, [a:cmdline[0] . ': unknown option: ' . flag], 0]
+        endif
+    endfor
+    call add(pshellArgs, '--')
+
+    let totalOutput = []
+    let finalResult = 0
+    for fname in fnames
+        if fdestination == ''
+            let q = s:runPowershellCommand(a:cmdline[0], pshellArgs + [fname])
+        else
+            let q = s:runPowershellCommand(a:cmdline[0], pshellArgs + [fname] + [fdestination])
+        endif
+        let thisResult = q[0]
+        let totalOutput = totalOutput + q[1]
+        if thisResult != 0
+            let finalResult = thisResult
+            break
+        endif
+    endfor
+
+    return [finalResult, totalOutput, 0]
 endfunction
 
 
