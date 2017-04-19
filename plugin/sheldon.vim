@@ -314,15 +314,38 @@ function! g:SheldonCommandEcho(tokens)
     return [0, [outputstr], 0]
 endfunction
 
-function! g:SheldonCommandWhich(tokens)
-    " which command: returns the handling program or function of a command
-    let cmdname = a:tokens[1]
+function! g:SheldonCommandWhich(cmdline)
+    " which command: echoes the handling function or program of a command
+
+    let q = s:separateFlagsAndArgs(a:cmdline[1:])
+    let flags = q[0]
+    let fnames = q[1]
+    let askingForHelp = q[2]
+
+    if askingForHelp == 1
+        return [0, ['which', 'specifies the executable full path or the Vimscript function name of a command', 'Usage:  which COMMANDNAME'], 0]
+    endif
+
+    if len(flags) > 0
+        return [1, ['which: unexpected arguments'], 0]
+    endif
+
+    if len(fnames) == 0
+        return [1, ['which: expected file names, but got none.'], 0]
+    endif
+
+    if len(fnames) > 1
+        return [1, ['which: expected a single file name, but got more.'], 0]
+    endif
+
     let result = 0
+    let cmdname = fnames[0]
     if has_key(g:SheldonCommands, cmdname)
         let outputstr = cmdname . ' is handled by the Vimscript function ' . g:SheldonCommands[cmdname]
     else
-        let outputstr = split(system(g:SheldonMakeSystemString(["which", cmdname])), "\<NL>")[0]
-        let result = v:shell_error
+        " let outputstr = split(system(g:SheldonMakeSystemString(["which", cmdname])), "\<NL>")[0]
+        " let result = v:shell_error
+        let outputstr = exepath(cmdname)
     endif
     return [result, [outputstr], 0]
 endfunction
