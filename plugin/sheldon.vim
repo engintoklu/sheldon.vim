@@ -14,7 +14,7 @@ if !exists('g:SheldonHistoryLength')
 endif
 
 if !exists('g:SheldonPowershellSettings')
-    let g:SheldonPowershellSettings = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Unrestricted']
+    let g:SheldonPowershellSettings = ['-NoProfile', '-NonInteractive']
 endif
 
 if !exists('g:SheldonUsePowershellOnWin')
