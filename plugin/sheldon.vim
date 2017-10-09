@@ -48,6 +48,7 @@ let g:SheldonCommands["cd"] = "g:SheldonCommandCd"
 let g:SheldonCommands["vi"] = "g:SheldonCommandVi"
 let g:SheldonCommands["vim"] = "g:SheldonCommandVi"
 let g:SheldonCommands["win"] = "g:SheldonCommandWin"
+let g:SheldonCommands["replace"] = "g:SheldonCommandReplace"
 let g:SheldonCommands["exit"] = "g:SheldonCommandExit"
 let g:SheldonCommands["clear"] = "g:SheldonCommandClear"
 let g:SheldonCommands["cls"] = "g:SheldonCommandClear"
@@ -88,7 +89,7 @@ function! s:separateFlagsAndArgs(cmdline)
     for cmdcell in a:cmdline
         if expectingFlags == 1 && cmdcell == '--help'
             let askingForHelp = 1
-        elseif expectingFlags == 1 && len(cmdcell) == '--'
+        elseif expectingFlags == 1 && cmdcell == '--'
             let expectingFlags = 0
         elseif expectingFlags == 1 && len(cmdcell) > 0 && cmdcell[0] == '-'
             for i in range(1, len(cmdcell))
@@ -369,6 +370,65 @@ endfunction
 function! g:SheldonCommandVi(tokens)
     " Opens the specified file for editing
     call g:SheldonEditFile(fnameescape(fnamemodify(a:tokens[1], ':p')), 1)
+    return [0, [], 1]
+endfunction
+
+function! g:SheldonCommandReplace(cmdline)
+    " Performs text replacement in all specified files
+    let q = s:separateFlagsAndArgs(a:cmdline[1:])
+    let flags = q[0]
+    let args = q[1]
+    let askingForHelp = q[2]
+
+    let substitute_c = 1
+    "let substitute_I = 0
+    "let substitute_i = 0
+
+    for iflag in range(len(flags))
+        let flag = flags[iflag]
+        if flag == 'y'
+            let substitute_c = 0
+        "elseif flag == 'i'
+        "    let substitute_i = 1
+        "elseif flag == 'I'
+        "    let substitute_I = 1
+        else
+            return [1, ['replace: Invalid argument:' . flag], 0]
+        endif
+    endfor
+
+    if askingForHelp == 1
+        return [0, ['Usage: replace <vimRegExp> <replaceWith> <filenames...>', 'Interactively replaces all vim regular expression matches with the specified text in all specified files.', 'Optional flag: -y Yes to all', '  Note: If <vimRegExp> starts with dash (-),', '  use a double dash to end the flag parsing,', '  so that <vimRegExp> is not counted as a flag, e.g.:', '    replace -y -- -mypattern xx a.txt b.txt'], 0]
+    endif
+
+    let patternToFind = args[0]
+    let replaceWith = args[1]
+    let fnames = args[2:]
+
+    let firstName = 1
+
+    for fname in fnames
+        if firstName == 1
+            execute ':arg ' . fname
+            let firstName = 0
+        else
+            execute ':argadd ' . fname
+        endif
+    endfor
+
+    let substituteFlags = 'ge'
+    if substitute_c == 1
+        let substituteFlags = substituteFlags . 'c'
+    endif
+    "if substitute_i == 1
+    "    let substituteFlags = substituteFlags . 'i'
+    "endif
+    "if substitute_I == 1
+    "    let substituteFlags = substituteFlags . 'I'
+    "endif
+
+    execute ':argdo %s/' . patternToFind . '/' . replaceWith . '/' . substituteFlags . ' | update'
+
     return [0, [], 1]
 endfunction
 

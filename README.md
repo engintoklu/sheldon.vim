@@ -128,6 +128,8 @@ You can also use wildcard expansion:
 
 `which <cmdname>` -- write which executable or Vim function is associated with the Sheldon command cmdname
 
+`replace <vimRegExp> <replaceText> <fileNames...>` -- replaces all occurences of `<vimRegExp>` in all specified files with `<replaceText>`. Use `replace -y <vimRegExp> <replaceText> <fileNames...>` for automatically answering 'yes' to all confirmation questions. If the regular expression or a file name starts with `-`, it can be misunderstood as a command line option flag. To prevent this, use: `replace -- -3.0 -4.0 mynumbers.txt`, or `replace -y -- -3.0 -4.0 mynumbers.txt` with yes-to-all setting.
+
 ## Notes for Windows Users
 
 On Windows, the primary directory separator is the backslash character (`\`). The forward slash (`/`) is the secondary directory separator. If you need to call an external tool which understands paths only via backslashes, you might want to quote the path within single quotes (`'`):
